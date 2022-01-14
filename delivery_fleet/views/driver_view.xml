@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_model_car_no_driver" model="ir.rule">
+        <field name="name">Driver: ready own order only</field>
+        <field name="model_id" ref="model_car_no_driver"/>
+        <field name="domain_force">[('user_id','=',user.id)]</field>
+
+        <field name="groups" eval="[(4,ref('delivery_fleet.delivey_fleet_user'))]"/>
+    </record>
+    <record id="rule_model_car_no_driver_admin" model="ir.rule">
+        <field name="name">Driver admin: ready all order</field>
+        <field name="model_id" ref="model_car_no_driver"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+
+        <field name="groups" eval="[(4,ref('delivery_fleet.delivey_fleet_user_all'))]"/>
+    </record>
+    <record id="car_driver_form" model="ir.ui.view">
+        <field name="name">car.no.driver.form</field>
+        <field name="model">car.no.driver</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <form create="0" string="Car Drivers">
+                <header>
+                    <!--<field name="is_self_assigned" invisible="1"/>-->
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <group>
+                    <field name="user_id" readonly="1" groups="delivery_fleet.delivey_fleet_admin"/>
+                    <field name="car_id" readonly="1" groups="delivery_fleet.delivey_fleet_admin"/>
+                    <field name="partner_id" readonly="1"/>
+                    <!--<label for="street" string="Address"/>-->
+                    <field name="country_id" invisible="1"/>
+                    <label for="street" string="Address"/>
+                    <div class="o_address_format">
+                        <field name="block_no" placeholder="Block No" class="o_address_street"/>
+                        <field name="building_no" class="o_address_street" placeholder="Building No"/>
+
+                        <field name="zone_id" placeholder="zone..." class="o_address_street"/>
+                        <field name="state_id" placeholder="Area..." class="o_address_street"
+                               domain="[('country_id','=', country_id)]"/>
+                        <field name="street" placeholder="Street..." class="o_address_street"/>
+                        <!--                    <field name="parcel" placeholder="Parcel" class="o_address_city"/>-->
+                    </div>
+                    <field name="mobile"/>
+                    <field name="stock_picking_id" readonly="1"/>
+                    <field name="delivery_date" readonly="1"  widget="date"/>
+
+                    <field name="problem"/>
+                    <field name="create_uid" readonly="1" groups="delivery_fleet.delivey_fleet_admin"/>
+
+                    <field name="create_date" readonly="1" groups="delivery_fleet.delivey_fleet_admin"/>
+                </group>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="car_driver_tree" model="ir.ui.view">
+        <field name="name">car.no.driver.tree</field>
+        <field name="model">car.no.driver</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" string="Car Drivers">
+                <field name="user_id"  groups="delivery_fleet.delivey_fleet_admin"/>
+                <field name="car_id"  groups="delivery_fleet.delivey_fleet_admin"/>
+
+                <field name="partner_id"/>
+                <field name="stock_picking_id"/>
+                <field name="state"/>
+                    <field name="delivery_date" readonly="1"  widget="date"/>
+
+                <field name="problem"/>
+                <field name="create_uid" groups="delivery_fleet.delivey_fleet_admin"/>
+
+                <field name="create_date" groups="delivery_fleet.delivey_fleet_admin"/>
+            </tree>
+        </field>
+    </record>
+    <record id="car_driver_search" model="ir.ui.view">
+        <field name="name">car.no.driver.searc</field>
+        <field name="model">car.no.driver</field>
+        <field name="priority" eval="8"/>
+        <field name="arch" type="xml">
+            <search string="Car Drivers">
+                <field name="partner_id"/>
+
+                <field name="user_id"/>
+                <newline/>
+                <group expand="0" string="Group By...">
+                    <filter string="Today Order" name="today_order"
+                            domain="[('delivery_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter name='partner_id' string=" Customer" domain="[]"
+                            context="{'group_by':'partner_id'}"/>
+                    <filter name='user_id' string=" User" domain="[]"
+                            context="{'group_by':'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="car_driver_action">
+        <field name="name">Car Drivers</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">car.no.driver</field>
+        <!--<field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="car_driver_search"/>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_today_order': 1}</field>
+
+    </record>
+    <menuitem id="car_driver_m" groups="delivery_fleet.delivey_fleet_user,delivery_fleet.delivey_fleet_admin"
+              sequence="1" name="Car Driver Report" parent="car_action_p"
+    />
+    <menuitem id="car_driver_report" groups="delivery_fleet.delivey_fleet_user,delivery_fleet.delivey_fleet_admin"
+              sequence="1" name="Cars Driver Report" parent="car_driver_m" action="car_driver_action"
+    />
+</odoo>
